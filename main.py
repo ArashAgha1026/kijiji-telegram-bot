@@ -4,6 +4,15 @@ import time
 import requests
 from playwright.sync_api import sync_playwright
 
+print("🚀 Bot is starting up...")
+
+try:
+    BOT_TOKEN = os.environ["BOT_TOKEN"]
+    CHAT_ID = os.environ["CHAT_ID"]
+except KeyError as e:
+    print(f"❌ Missing environment variable: {e}")
+    exit(1)
+
 # --- Load credentials from environment ---
 BOT_TOKEN = os.environ["BOT_TOKEN"]
 CHAT_ID = os.environ["CHAT_ID"]
