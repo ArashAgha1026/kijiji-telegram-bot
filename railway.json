@@ -1,0 +1,8 @@
+{
+  "build": {
+    "command": "playwright install"
+  },
+  "start": {
+    "command": "bash start.sh"
+  }
+}
