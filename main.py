@@ -52,6 +52,7 @@ def send_telegram_message(text):
 
 def run_bot():
     global seen_ads
+    print("🧠 Scraping", LOCATION_URL)
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
@@ -93,9 +94,10 @@ def run_bot():
 
         browser.close()
 
-# Loop
+# --- Run forever loop ---
 while True:
     try:
+        print("🔁 Entering scraping loop...")
         run_bot()
         print("⏳ Sleeping for 10 minutes...\n")
         time.sleep(CHECK_INTERVAL)
