@@ -69,7 +69,7 @@ def run_bot():
             # Try multiple selectors safely
             ads = page.query_selector_all("li[data-testid='listing-card']")
             if not ads:
-                ads = page.query_selector_all("li[data-listing-id']")
+                ads = page.query_selector_all("li[data-listing-id]")
             if not ads:
                 ads = page.query_selector_all("div.search-item")
 
