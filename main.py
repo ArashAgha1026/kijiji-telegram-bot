@@ -51,7 +51,8 @@ def run_bot():
     global seen_ads
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
-        page = browser.new_page()
+        context = browser.new_context()
+        page = context.new_page()
 
         for keyword in KEYWORDS:
             search_url = BASE_URL + keyword.replace(" ", "+")
@@ -59,7 +60,18 @@ def run_bot():
             page.goto(search_url)
             page.wait_for_timeout(5000)
 
-            ads = page.query_selector_all("li[data-listing-id]") or page.query_selector_all("div.search-item")
+            # Take screenshot for debugging
+            screenshot_path = f"debug_{keyword}.png"
+            page.screenshot(path=screenshot_path)
+            log_and_send(f"📸 Screenshot saved: {screenshot_path}")
+
+            # Try more robust selectors
+            ads = page.query_selector_all("li[data-testid='listing-card']")
+            if not ads:
+                ads = page.query_selector_all("li[data-listing-id]")
+            if not ads:
+                ads = page.query_selector_all("div.search-item")
+
             log_and_send(f"🔍 Found {len(ads)} ads for '{keyword}'")
 
             for ad in ads:
@@ -81,7 +93,7 @@ def run_bot():
 
                 log_and_send(f"📝 {title} | ${price} | ID: {ad_id}")
 
-                if ad_id in seen_ads:    
+                if ad_id in seen_ads:
                     continue
 
                 if keyword in title and price and PRICE_MIN <= price <= PRICE_MAX:
