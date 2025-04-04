@@ -34,7 +34,7 @@ PRICE_MIN = 1000
 PRICE_MAX = 3000
 CHECK_INTERVAL = 600
 SEEN_FILE = "seen_ads.json"
-BASE_URL = "https://www.kijiji.ca/b-velos/ville-de-montreal/c644l1700281?radius=25.0&address=Montreal%2C+QC&ll=45.5018869%2C-73.56739189999999&view=list&keywords="
+BASE_URL = "https://www.kijiji.ca/b-velos/ville-de-montreal/{keyword}/k0c644l1700281?radius=25.0&price=1000__3000&address=Montreal%2C+QC&ll=45.5018869%2C-73.56739189999999&view=list"
 
 try:
     with open(SEEN_FILE, "r") as f:
@@ -55,13 +55,14 @@ def run_bot():
         page = context.new_page()
 
         for keyword in KEYWORDS:
-            search_url = BASE_URL + keyword.replace(" ", "+")
+            keyword_slug = keyword.replace(" ", "-").lower()
+            search_url = BASE_URL.replace("{keyword}", keyword_slug)
             log_and_send(f"🔍 Searching for '{keyword}' → {search_url}")
             page.goto(search_url)
             page.wait_for_timeout(5000)
 
             # Take screenshot for debugging
-            screenshot_path = f"debug_{keyword}.png"
+            screenshot_path = f"debug_{keyword_slug}.png"
             page.screenshot(path=screenshot_path)
             log_and_send(f"📸 Screenshot saved: {screenshot_path}")
 
