@@ -34,7 +34,7 @@ PRICE_MIN = 1000
 PRICE_MAX = 3000
 CHECK_INTERVAL = 600
 SEEN_FILE = "seen_ads.json"
-LOCATION_URL = "https://www.kijiji.ca/b-montreal/downtown/k0l80002?radius=25.0"
+BASE_URL = "https://www.kijiji.ca/b-velos/ville-de-montreal/c644l1700281?radius=25.0&address=Montreal%2C+QC&ll=45.5018869%2C-73.56739189999999&view=list&keywords="
 
 try:
     with open(SEEN_FILE, "r") as f:
@@ -49,43 +49,45 @@ def send_telegram_message(text):
 # --- Scraper ---
 def run_bot():
     global seen_ads
-    log_and_send(f"🧠 Scraping {LOCATION_URL}")
-
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
-        page.goto(LOCATION_URL)
-        page.wait_for_timeout(5000)
 
-        ads = page.query_selector_all("li[data-listing-id]")
-        log_and_send(f"🔍 Found {len(ads)} ads")
+        for keyword in KEYWORDS:
+            search_url = BASE_URL + keyword.replace(" ", "+")
+            log_and_send(f"🧠 Searching for '{keyword}' → {search_url}")
+            page.goto(search_url)
+            page.wait_for_timeout(5000)
 
-        for ad in ads:
-            title_el = ad.query_selector("h3") or ad.query_selector("div.title")
-            price_el = ad.query_selector("div.price") or ad.query_selector("span.price")
-            link_el = ad.query_selector("a")
+            ads = page.query_selector_all("li[data-listing-id]")
+            log_and_send(f"🔍 Found {len(ads)} ads for '{keyword}'")
 
-            if not title_el or not link_el:
-                continue
+            for ad in ads:
+                title_el = ad.query_selector("h3") or ad.query_selector("div.title")
+                price_el = ad.query_selector("div.price") or ad.query_selector("span.price")
+                link_el = ad.query_selector("a")
 
-            title = title_el.inner_text().lower()
-            url = "https://www.kijiji.ca" + link_el.get_attribute("href")
-            ad_id = url.split("/")[-1]
+                if not title_el or not link_el:
+                    continue
 
-            try:
-                price = int(price_el.inner_text().replace("$", "").replace(",", "").strip())
-            except:
-                price = None
+                title = title_el.inner_text().lower()
+                url = "https://www.kijiji.ca" + link_el.get_attribute("href")
+                ad_id = url.split("/")[-1]
 
-            log_and_send(f"📝 {title} | ${price} | ID: {ad_id}")
+                try:
+                    price = int(price_el.inner_text().replace("$", "").replace(",", "").strip())
+                except:
+                    price = None
 
-            if ad_id in seen_ads:
-                continue
+                log_and_send(f"📝 {title} | ${price} | ID: {ad_id}")
 
-            if any(k in title for k in KEYWORDS) and price and PRICE_MIN <= price <= PRICE_MAX:
-                log_and_send("✅ Match found!")
-                send_telegram_message(f"🆕 Match: {title}\n💰 ${price}\n🔗 {url}")
-                seen_ads.add(ad_id)
+                if ad_id in seen_ads:
+                    continue
+
+                if keyword in title and price and PRICE_MIN <= price <= PRICE_MAX:
+                    log_and_send("✅ Match found!")
+                    send_telegram_message(f"🆕 Match: {title}\n💰 ${price}\n🔗 {url}")
+                    seen_ads.add(ad_id)
 
         with open(SEEN_FILE, "w") as f:
             json.dump(list(seen_ads), f)
