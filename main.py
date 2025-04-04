@@ -4,25 +4,36 @@ import time
 import requests
 from playwright.sync_api import sync_playwright
 
-print("🚀 Bot is starting up...")
+print("🚀 Starting bot setup...")
 
-# Load credentials safely
+# Step 1: Startup message
+print("🛠 Bot is running this line!")
+
+# Step 2: Test Telegram connection
 try:
     BOT_TOKEN = os.environ["BOT_TOKEN"]
     CHAT_ID = os.environ["CHAT_ID"]
-except KeyError as e:
-    print(f"❌ Missing environment variable: {e}")
+    test_message = "✅ Telegram bot has started successfully."
+    requests.post(
+        f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
+        data={"chat_id": CHAT_ID, "text": test_message}
+    )
+    print("📤 Telegram startup message sent")
+except Exception as e:
+    print("❌ Telegram send failed:", e)
     exit(1)
 
-# Settings
+# Step 3: Confirm setup complete
+print("✅ Setup successful. Proceeding to Kijiji scraping...")
+
+# --- Scraping settings ---
 KEYWORDS = ["specialized", "kona", "yt decoy", "trek", "santa cruz", "orbea", "norco"]
 PRICE_MIN = 1000
 PRICE_MAX = 3000
-CHECK_INTERVAL = 600  # seconds
+CHECK_INTERVAL = 600
 SEEN_FILE = "seen_ads.json"
 LOCATION_URL = "https://www.kijiji.ca/b-montreal/downtown/k0l80002?radius=25.0"
 
-# Load seen ads
 try:
     with open(SEEN_FILE, "r") as f:
         seen_ads = set(json.load(f))
@@ -31,12 +42,13 @@ except:
 
 def send_telegram_message(text):
     try:
-        url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-        payload = {"chat_id": CHAT_ID, "text": text}
-        requests.post(url, data=payload)
-        print("📤 Telegram message sent")
+        requests.post(
+            f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
+            data={"chat_id": CHAT_ID, "text": text}
+        )
+        print("📤 Sent to Telegram")
     except Exception as e:
-        print("❌ Failed to send Telegram:", e)
+        print("❌ Error sending to Telegram:", e)
 
 def run_bot():
     global seen_ads
@@ -81,7 +93,7 @@ def run_bot():
 
         browser.close()
 
-# Run loop
+# Loop
 while True:
     try:
         run_bot()
@@ -89,6 +101,6 @@ while True:
         time.sleep(CHECK_INTERVAL)
     except Exception as e:
         import traceback
-        print("🔥 Unexpected error:")
+        print("🔥 Bot error:")
         traceback.print_exc()
-        time.sleep(60)  # wait 1 minute before retrying
+        time.sleep(60)
