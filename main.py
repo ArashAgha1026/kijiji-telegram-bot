@@ -56,7 +56,7 @@ def run_bot():
 
         for keyword in KEYWORDS:
             search_url = BASE_URL + keyword.replace(" ", "+")
-            log_and_send(f"🧠 Searching for '{keyword}' → {search_url}")
+            log_and_send(f"🔍 Searching for '{keyword}' → {search_url}")
             page.goto(search_url)
             page.wait_for_timeout(5000)
 
@@ -65,14 +65,14 @@ def run_bot():
             page.screenshot(path=screenshot_path)
             log_and_send(f"📸 Screenshot saved: {screenshot_path}")
 
-            # Try more robust selectors
+            # Try multiple selectors safely
             ads = page.query_selector_all("li[data-testid='listing-card']")
             if not ads:
-                ads = page.query_selector_all("li[data-listing-id]")
+                ads = page.query_selector_all("li[data-listing-id']")
             if not ads:
                 ads = page.query_selector_all("div.search-item")
 
-            log_and_send(f"🔍 Found {len(ads)} ads for '{keyword}'")
+            log_and_send(f"🔎 Found {len(ads)} ads for '{keyword}'")
 
             for ad in ads:
                 title_el = ad.query_selector("h3") or ad.query_selector("div.title")
