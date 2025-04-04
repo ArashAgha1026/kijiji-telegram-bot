@@ -1,3 +1,4 @@
+print("🚀 Bot is starting up...")
 import os
 import requests
 import json
