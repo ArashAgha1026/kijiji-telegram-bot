@@ -2,7 +2,7 @@ import os
 import time
 import requests
 
-print("🚀 Bot starting")
+print("🚀 Bot starting", flush=True)
 
 try:
     BOT_TOKEN = os.environ["BOT_TOKEN"]
@@ -12,11 +12,11 @@ try:
         data={"chat_id": CHAT_ID, "text": "🔄 Bot has entered the main loop!"}
     )
 except Exception as e:
-    print("❌ Failed to send message:", e)
+    print("❌ Failed to send message:", e, flush=True)
     exit(1)
 
-print("⚙️ Entering loop...")
+print("⚙️ Entering loop...", flush=True)
 
 while True:
-    print("⏳ Still running...")
+    print("⏳ Still running...", flush=True)
     time.sleep(30)
