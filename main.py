@@ -59,7 +59,7 @@ def run_bot():
             page.goto(search_url)
             page.wait_for_timeout(5000)
 
-            ads = page.query_selector_all("li[data-listing-id]")
+            ads = page.query_selector_all("li[data-listing-id]") or page.query_selector_all("div.search-item")
             log_and_send(f"🔍 Found {len(ads)} ads for '{keyword}'")
 
             for ad in ads:
@@ -81,7 +81,7 @@ def run_bot():
 
                 log_and_send(f"📝 {title} | ${price} | ID: {ad_id}")
 
-                if ad_id in seen_ads:
+                if ad_id in seen_ads:    
                     continue
 
                 if keyword in title and price and PRICE_MIN <= price <= PRICE_MAX:
